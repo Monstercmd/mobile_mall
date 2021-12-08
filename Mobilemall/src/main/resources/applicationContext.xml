@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd">
+<!--    &lt;!&ndash;引入小配置文件 读取jdbc.properties&ndash;&gt;-->
+    <context:property-placeholder location="classpath:common.properties" system-properties-mode="NEVER"/>
+    <bean class="com.alibaba.druid.pool.DruidDataSource" id="dataSource">
+        <property name="driverClassName" value="${driverClassName}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+    </bean>
+    <!-- 定义SqlSessionFactory，管理mybatis的数据库连接sqksession对象-->
+    <bean class="com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean" id="sqlSessionFactory">
+        <property name="dataSource" ref="dataSource"/>
+        <!--配置实体类的包名，自动为实体配置短类名的别名-->
+        <property name="typeAliasesPackage" value="entity"/>
+        <property name="mapperLocations">
+            <!-- 配置mapper.xml的路径-->
+            <list>
+                <value>classpath:dao/*Dao.xml</value>
+            </list>
+        </property>
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor"/>
+            </array>
+        </property>
+    </bean>
+    <!--让spring扫描dao包，创建出dao接口的实现类，并把实现类配置为bean标签
+自动创建Mapper实现类对象
+自动扫描basePackage包下的Mapper接口，自动创建Mapper接口的实现类对象-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- mapper实现类对象的id规则：接口名首字母小写
+        UserMapper ==> userMapper
+        BookMapper ==> bookMapper -->
+        <property name="basePackage" value="dao"/>
+    </bean>
+<!--    管理员-->
+
+<!--用户-->
+
+<!--    商品类别-->
+    <!-- 配置要扫描注解的包-->
+    <context:component-scan base-package="service"/>
+    <!--事务管理器-->
+    <bean id="tm" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!--把事务管理器注入到事务通知类-->
+    <tx:advice id="txAdvice" transaction-manager="tm">
+<!--事务的策略，类中不同方法使用不同的事务策略-->
+        <tx:attributes>
+            <!--以select的方法，都是只读的方法，不用使用事务-->
+            <tx:method name="select*" read-only="true"/>
+            <!--除了select开头的方法，其余的方法都必须使用事务-->
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+    <!--配置切入点和织入-->
+    <aop:config>
+        <aop:pointcut id="pc" expression="execution(* service..*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pc"/>
+    </aop:config>
+</beans>
