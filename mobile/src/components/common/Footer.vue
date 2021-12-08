@@ -16,7 +16,7 @@
 
         </div>
       </el-backtop>
-      <span style="font-family:arial;">Copyright &copy;2021 by 任冠华 QQ:476093718</span>
+      <span style="font-family:arial;">Copyright &copy;2021 by vfr QQ:7940758</span>
     </div>
 
 </template>

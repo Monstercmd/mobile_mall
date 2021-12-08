@@ -130,7 +130,7 @@
                     首页地址：<span style="color: #df5000">http://121.40.159.226</span>
                   </el-col>
                   <el-col :span="12">
-                    作者：<span style="color: #df5000">任冠华</span>
+                    作者：<span style="color: #df5000">vfr</span>
                   </el-col>
                 </el-row>
                 <el-row :gutter="10">

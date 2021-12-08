@@ -293,7 +293,7 @@
             },
             // 申请售后
             saled(){
-                this.$alert('<span><span><img src="http://localhost:8181/assets/common/qq.png" /></span>&nbsp;<span style="color: red;font-size: 16px">476093718</span></span>&nbsp;&nbsp;' +
+                this.$alert('<span><span><img src="http://localhost:8181/assets/common/qq.png" /></span>&nbsp;<span style="color: red;font-size: 16px">7940758</span></span>&nbsp;&nbsp;' +
                     '<span><span><img src="http://localhost:8181/assets/common/wx.png" /></span>&nbsp;<span style="color: red;font-size: 16px">STY1570</span></span>&nbsp;&nbsp;' +
                     '<span><i class="el-icon-mobile-phone"></i>&nbsp;<span style="color: red;font-size: 16px">18240754289</span></span>', '商家联系方式', {
                     dangerouslyUseHTMLString: true,
