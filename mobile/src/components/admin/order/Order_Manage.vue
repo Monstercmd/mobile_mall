@@ -1,0 +1,362 @@
+<template>
+  <div>
+    <el-card class="box-card">
+      <div slot="header" class="clearfix">
+        <span>订单列表</span>
+      </div>
+      <div>
+        <el-row :gutter="2" align="center">
+
+          <el-form :inline="true"  class="demo-form-inline" size="mini">
+            <el-form-item label="下单人">
+              <el-input v-model="userName" placeholder="请输入账号" style="width: 120px"></el-input>
+            </el-form-item>
+            <el-form-item label="订单号">
+              <el-input v-model="id" placeholder="请输入订单号" style="width: 120px"></el-input>
+            </el-form-item>
+            <el-form-item label="订单状态：">
+              <el-select v-model="state" placeholder="请选择" style="width:100px">
+                <el-option label="全部"
+                           value="-1">
+                </el-option>
+                <el-option label="未付款"
+                           value="0">
+                </el-option>
+                <el-option label="已付款"
+                           value="1">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" icon="el-icon-search" @click="handleSearch">查询</el-button>
+            </el-form-item>
+          </el-form>
+        </el-row>
+        <el-row :gutter="10">
+          <el-col :span="24">
+            <el-table
+              :data="pageInfo.list"
+              border
+              stripe
+              size="small"
+              style="width:1280px"
+              :default-sort = "{prop: 'orderTime'}"
+             >
+
+              <el-table-column
+                align="center"
+                prop="id"
+                label="订单号"
+                width="145">
+              </el-table-column>
+              <el-table-column
+                align="center"
+                prop="goodPrice"
+                label="下单金额"
+                width="100">
+              </el-table-column>
+              <el-table-column
+                align="center"
+                prop="user.email"
+                label="下单人"
+                width="150">
+              </el-table-column>
+              <el-table-column
+                align="center"
+                label="订单状态"
+                width="80">
+                <template slot-scope="scope">
+                  <span v-if="scope.row.orderState==1" style="color: #13ce66">已付款</span>
+                  <span v-if="scope.row.orderState==0" style="color: #d8000f">未付款</span>
+                  <span v-if="scope.row.orderState==2" style="color: #d8000f">已发货</span>
+                  <span v-if="scope.row.orderState==3" style="color: #67c23a">已完成</span>
+                  <span v-if="scope.row.orderState==-2" style="color: #dc8f03">退款申请</span>
+                  <span v-if="scope.row.orderState==-3" style="color: #ea6f5a">已退款</span>
+                  <span v-if="scope.row.orderState==-4" style="color: red">拒绝退款</span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                align="center"
+                prop="orderTime"
+                sortable
+                label="下单时间"
+                width="180">
+              </el-table-column>
+              <el-table-column
+                align="center"
+                prop="address.name"
+                label="收货人"
+                width="100">
+              </el-table-column>
+              <el-table-column
+                align="center"
+                prop="address.address"
+                label="收货地址"
+                :formatter="stateFormat"
+                width="180">
+              </el-table-column>
+              <el-table-column
+                header-align="center"
+                align="center"
+                label="操作"
+                width="280"
+              >
+                <template slot-scope="scope">
+                 <span v-if="scope.row.orderState===0"><el-button type="" size="mini"><span  style="color:green">待付款</span></el-button></span>
+                  <span v-if="scope.row.orderState===1"> <el-button type="" size="mini" @click="handleState(scope.row.id,2)">
+                    <span  style="color: #df5000" >发货</span>
+                  </el-button></span>
+                  <span v-if="scope.row.orderState===2"> <el-button type="" disabled size="mini">
+                    <span style="color: #df5000" >已发货</span>
+                  </el-button></span>
+                  <span v-if="scope.row.orderState===-2"> <el-button type="" size="mini" @click="handleState(scope.row.id,-3)">
+                    <span style="color: #dc8f03">同意</span>
+                  </el-button><el-button type="" size="mini" @click="handleState(scope.row.id,-4)">
+                    <span style="color: #df5000" >拒绝</span>
+                  </el-button></span>
+                  <span v-if="scope.row.orderState===3"> <el-button type="success" size="mini" disabled>
+                   交易完成
+                  </el-button></span>
+
+                  <span v-if="scope.row.orderState===-3"> <el-button type="info" size="mini" disabled>
+                   已退款
+                  </el-button></span>
+
+                  <span v-if="scope.row.orderState===-4"> <el-button type="danger" size="mini" disabled>
+                   已拒绝退款
+                  </el-button></span>
+
+                  <el-button type="primary" icon="el-icon-edit-outline" size="mini"
+                             @click="handleUpdate(scope.row)">详情</el-button>
+
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-pagination
+              :page-size.sync="pageSize"
+              :current-page.sync="currentPage"
+              :page-sizes="[6,12,24]"
+              layout="total,sizes, prev, pager, next, jumper"
+              @current-change="handleCurrentChange"
+              @size-change="handleSizeChange"
+              :page-count="5"
+              :total="total">
+            </el-pagination>
+          </el-col>
+        </el-row>
+      </div>
+    </el-card>
+  </div>
+</template>
+
+<script>
+    export default {
+        name: "Order_Manage",
+        data() {
+            return {
+                //表格
+                pageInfo: {},
+                selections: [],
+                //分页
+                total: 0,
+                currentPage: 1,
+                pageSize: 6,
+                state:'',
+                id:'',
+                userName:'',
+            }
+        },
+        methods: {
+            //搜索
+            handleSearch() {
+                let id = 0;
+                if (this.id === '') {
+                    id = 0;
+                } else {
+                    id = this.id;
+                }
+                let state=0;
+                if (this.state === '') {
+                    state = 0;
+                } else {
+                    state = this.state;
+                }
+                this.axios({
+                    method: "get",
+                    url: "/order/user",
+                    params: {
+                        id,state,userName:this.userName
+                    }
+                }).then((resp) => {
+                    this.pageInfo = resp.data;
+                    this.total = resp.data.total;
+                })
+            },
+            // 分页相关
+            //跳转或当前页改变
+            handleCurrentChange(current) {
+                this.selectByPage(current, this.pageSize);
+            },
+            //下拉框页数改变
+            handleSizeChange(val) {
+                this.selectByPage(this.currentPage, val);
+            },
+            //查询
+            selectByPage(pageNo, pageSize) {
+                let id = 0;
+                if (this.id === '') {
+                    id = 0;
+                } else {
+                    id = this.id;
+                }
+                let state=0;
+                if (this.state === '') {
+                    state = -1;
+                } else {
+                    state = this.state;
+                }
+                this.axios({
+                    method: "get",
+                    url: "/order/user",
+                    params: {
+                        pageNo, pageSize,id,state,userName:this.userName
+                    }
+                }).then((resp) => {
+                    this.pageInfo = resp.data;
+                    this.total = resp.data.total;
+                })
+            },
+            //字数限制
+            stateFormat(row, column, cellValue) {
+                if (!cellValue) return '';
+                if (cellValue.length > 6) {       //最长固定显示10个字符
+                    return cellValue.slice(0, 6) + '...'
+                }
+                return cellValue
+            },
+            //批量删除
+            handleSelectionChange(value) {
+
+                for(let i=0;i<value.length;i++){
+                    this.selections = value[i].id;
+                }
+                console.log(this.selections);
+
+            },
+            //多条删除
+            handleSelection() {
+                //获取到表格对象，从表格中获取到已经选择到的行
+                this.$confirm('此操作将永久删除这些数据, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.axios({
+                        method: "delete",
+                        url: "/order/many?ids="+this.selections,
+                    }).then(
+                        resp => {
+                            if (resp.data === "success") {
+                                this.$message({
+                                    type: 'success',
+                                    message: '删除成功!'
+                                });
+                                this.selectByPage(this.currentPage, this.pageSize);
+                            } else {
+                                this.$notify.error({
+                                    title: '删除失败',
+                                    message: '这些商品下绑定其他信息暂时不能删除，可先下架过一段时间删除',
+                                    showClose: false
+                                });
+                            }
+                        }
+                    )
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            //单个删除
+            handleRemove(id) {
+                this.$confirm('此操作将永久删除该订单, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.axios({
+                        method: "delete",
+                        url: "/order?id=" + id
+                    }).then(resp => {
+                        if (resp.data==="success") {
+                            this.$message({
+                                type: 'success',
+                                message: '删除成功!'
+                            });
+                            this.selectByPage(this.currentPage, this.pageSize);
+                        } else {
+                            this.$notify.error({
+                                title: '删除失败',
+                                message: '该订单绑定着其他信息，暂时不能删除,可以在空闲时间选择在数据库里批量删除',
+                                showClose: false
+                            });
+                        }
+                    })
+
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            //改变状态
+            handleState(id,state){
+               var title="";
+               if(state===2){
+                   title='是否发货?'
+               }else if(state===-3){
+                title='是否同意退款？'
+               }else if(state===-4){
+                   title='是否拒绝退款？'
+               }
+                this.$confirm(title, '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    this.axios.get("/order/status",{params:{id,state}}).then(resp=>{
+                        if(resp.data==="success"){
+                            this.$message({
+                                type: 'success',
+                                message: '操作成功!',
+                                onClose:this.selectByPage(this.currentPage, this.pageSize)
+                            });
+                        }else {
+                            this.$message({
+                                type: 'error',
+                                message: '操作失败',
+                            });
+                        }
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消操作'
+                    });
+                });
+            },
+            handleUpdate(row){
+                this.$router.push({path:'/admin/order_detail',query:{id:row.id}})
+            }
+        },
+        created() {
+            this.selectByPage(1, 6);
+        }
+    }
+</script>
+
+<style scoped>
+
+</style>
