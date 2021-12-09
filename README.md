@@ -5,11 +5,10 @@
 
 ## 捐赠
 
-支付宝QQ微信打赏
+如有对你有帮助，请赏一杯咖啡的money吧，如有技术性问题，联系QQ:7940758,备注：github
 
 [![oR1BND.png](https://s4.ax1x.com/2021/12/08/oR1BND.png)](https://imgtu.com/i/oR1BND)
 
-如有技术性问题，联系QQ:7940758,备注：github
 
 ## 前端介绍
 
@@ -89,3 +88,12 @@ Mobilemall\src\main\resources下的**common.properties**改成你自己的数据
 
 [![oRlffJ.md.png](https://s4.ax1x.com/2021/12/08/oRlffJ.md.png)](https://imgtu.com/i/oRlffJ)
 
+## 项目部分截图
+
+[![oWTNjS.png](https://s1.ax1x.com/2021/12/09/oWTNjS.png)](https://imgtu.com/i/oWTNjS)
+
+[![oWTw7j.png](https://s1.ax1x.com/2021/12/09/oWTw7j.png)](https://imgtu.com/i/oWTw7j)
+
+[![oWTRuF.png](https://s1.ax1x.com/2021/12/09/oWTRuF.png)](https://imgtu.com/i/oWTRuF)
+
+[![oWT4E9.png](https://s1.ax1x.com/2021/12/09/oWT4E9.png)](https://imgtu.com/i/oWT4E9)
